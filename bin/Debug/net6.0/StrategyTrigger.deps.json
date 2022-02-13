@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "StrategyTrigger/1.0.0": {
+        "dependencies": {
+          "SmartTrigger": "1.0.0"
+        },
+        "runtime": {
+          "StrategyTrigger.dll": {}
+        }
+      },
+      "SmartTrigger/1.0.0": {
+        "runtime": {
+          "SmartTrigger.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "StrategyTrigger/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SmartTrigger/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
