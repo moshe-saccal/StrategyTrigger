@@ -1,30 +1,11 @@
 {
   "version": 3,
   "targets": {
-    "net6.0": {
-      "SmartTrigger/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v3.1",
-        "compile": {
-          "bin/placeholder/SmartTrigger.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/SmartTrigger.dll": {}
-        }
-      }
-    }
+    "net6.0": {}
   },
-  "libraries": {
-    "SmartTrigger/1.0.0": {
-      "type": "project",
-      "path": "../SmartTrigger/SmartTrigger.csproj",
-      "msbuildProject": "../SmartTrigger/SmartTrigger.csproj"
-    }
-  },
+  "libraries": {},
   "projectFileDependencyGroups": {
-    "net6.0": [
-      "SmartTrigger >= 1.0.0"
-    ]
+    "net6.0": []
   },
   "packageFolders": {
     "C:\\Users\\Administrator\\.nuget\\packages\\": {},
@@ -60,11 +41,7 @@
       "frameworks": {
         "net6.0": {
           "targetAlias": "net6.0",
-          "projectReferences": {
-            "C:\\Users\\Administrator\\source\\repos\\moshe-saccal\\SmartTrigger\\SmartTrigger.csproj": {
-              "projectPath": "C:\\Users\\Administrator\\source\\repos\\moshe-saccal\\SmartTrigger\\SmartTrigger.csproj"
-            }
-          }
+          "projectReferences": {}
         }
       },
       "warningProperties": {
