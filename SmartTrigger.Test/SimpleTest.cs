@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static SmartTrigger.SmartTriggerBase;
 
 namespace SmartTrigger.Test
 {
@@ -20,7 +21,10 @@ namespace SmartTrigger.Test
 
             return lis;
         }
+
+
     }
+
     public class Tests
     {
 
@@ -56,80 +60,147 @@ namespace SmartTrigger.Test
         }
         public class ChangeableDateProvider : ISystemDateProvider
         {
+            public static ChangeableDateProvider Create(DateTime current)
+            {
+                return new ChangeableDateProvider(current);
+
+            }
+            public static ChangeableDateProvider Create()
+            {
+                return new ChangeableDateProvider();
+            }
+            public ChangeableDateProvider()
+            {
+                Now = DateTime.Now;
+            }
+            public ChangeableDateProvider(DateTime current)
+            {
+                Now = current;
+            }
             public DateTime Now { get; set; }
         }
 
+        public static INotificationStrategy Strategy_MonFri_First2WorkingHours_2DaysEdge =>
+            NotificationStrategyGenericBuilder.Create()
+                .WithAvoidedDaysOfWeeks(DayOfWeek.Saturday, DayOfWeek.Sunday)
+                .WithNotificationWindows(NotificationStrategyWindow.Create(TimeSpan.FromHours(10), TimeSpan.FromHours(20)))
+                .WithNotificationReminders(TimeSpan.FromHours(1), TimeSpan.FromHours(2))
+                .WithExpirationSpanAfterInitialDate(TimeSpan.FromDays(2))
+                .WithExpirationSpanBeforeEndingDate(TimeSpan.FromDays(2))
+                .Build();
 
 
 
+
+        private IEnumerable<NotificableEvaluationResult> Evaluate(INotificationStrategy notificationStrategy,
+            ISystemDateProvider dateProvider,
+             params SimpleTestNotificable[] notificables)
+        {
+
+            var _provider = SimpleTestNotificationProviderBuilder.Create()
+                .WithSystemDateProvider(dateProvider)
+                .WithSimpleTestNotificables(notificables.AsEnumerable())
+                .Build();
+
+            var smart_trigger = SmartTriggerBuilder.Create()
+                .WithNotificationStrategy(Strategy_MonFri_First2WorkingHours_2DaysEdge)
+                .WithSystemDateProvider(dateProvider)
+                .WithNotificationsProvider(_provider)
+                .Build();
+
+            var result = smart_trigger.EvaluateNotificables().GetAsyncEnumerator().ReadAll().GetAwaiter().GetResult();
+            return result;
+        }
+        [Test]
+        public async Task Test_Outside_Time_Of_Day()
+        {
+            
+            var next_mon_11am = DateTime.Now.AddDays(Math.Abs(3 - (int)DateTime.Now.DayOfWeek));
+            
+            var _date = ChangeableDateProvider.Create( DateTime.Now );
+            
+            var result = Evaluate(Strategy_MonFri_First2WorkingHours_2DaysEdge,
+                   _date,
+                   SimpleTestNotificable.Create(_date.Now.AddDays(-1)));
+            Assert.True(result.FirstOrDefault().Result.Equals(NotifcableEvaluationResult.DONT_NOTIFY_VOIDED_DAY_OF_WEEK));
+        }
 
         [Test]
-        public async Task Test_Simple_To_Early()
+        public async Task Test_Voided_Day_Of_Week()
         {
-            var _date = new ChangeableDateProvider();
-            _date.Now = DateTime.Now;
 
-            var _items = new List<SimpleTestNotificable>() { SimpleTestNotificable.Create("test1", _date.Now.AddDays(-1), _date.Now) };
-            var _notificator = CreateTestNotificator(_items, _date);
-            var _all = _notificator.GetNotificables().GetAsyncEnumerator().ReadAll();
-
-
+            var next_sunday = DateTime.Now.AddDays(Math.Abs(7 - (int)DateTime.Now.DayOfWeek));
+            var _date = ChangeableDateProvider.Create(next_sunday);
+            var result = Evaluate(Strategy_MonFri_First2WorkingHours_2DaysEdge,
+                   _date,
+                   SimpleTestNotificable.Create(_date.Now.AddDays(-10)));
+            Assert.True(result.FirstOrDefault().Result.Equals(NotifcableEvaluationResult.DONT_NOTIFY_VOIDED_DAY_OF_WEEK));
         }
-        private SimpleTestNotificator CreateTestNotificator(IEnumerable<SimpleTestNotificable> items,
-            ISystemDateProvider provider)
-        => new SimpleTestNotificator(new SimpleTestNotificationProvider(items, provider), provider);
+
 
 
 
         [Test]
         public async Task TestSimpleUseCaseWithManyRandomItems()
         {
-            var _items = GenerateItems(DateTime.Now.AddDays(-100), DateTime.Now.AddDays(100), 100);
-
-            var _date = new ChangeableDateProvider();
-            var cur_date = DateTime.Now.AddDays(-1).AddHours(-5);
-            _date.Now = cur_date;
-
-            var b = NotificationStrategyGenericBuilder.Create()
-                .WithAvoidedDaysOfWeeks(DayOfWeek.Saturday, DayOfWeek.Sunday)
-                .WithNotificationWindows(NotificationStrategyWindow.Create(TimeSpan.FromHours(10), TimeSpan.FromHours(20)))
-                .WithNotificationReminders(TimeSpan.FromHours(1), TimeSpan.FromHours(2))
-                .WithExpirationSpanAfterInitialDate(TimeSpan.FromHours(2))
-                .WithExpirationSpanBeforeEndingDate(TimeSpan.FromHours(2)).Build();
-
-                
-
-            var pac = new SimpleTestNotificator(new SimpleTestNotificationProvider(_items, _date), _date);
-
-
-            var all = await pac.GetNotificables().GetAsyncEnumerator().ReadAll();
-
-            //var all =await res.ReadAll();
-
-            all.ToList().ForEach(x =>
+            try
             {
-                System.Diagnostics.Debug.WriteLine(x.Item2.Reason.ToString());
-                TestContext.Out.WriteLine(x.Item2.Notify.ToString() + "->" + x.Item1.Start.ToString() + "->" + x.Item2.Reason.ToString());
-            });
-            Assert.IsTrue(all.Count() == _items.Count());
-            Assert.IsTrue(all.Where(a => a.Item2.Notify).Count() < _items.Count() / 2);
 
+                var _date = new ChangeableDateProvider();
+                var cur_date = DateTime.Now.AddDays(-1).AddHours(-5);
+                _date.Now = cur_date;
+
+                var _items = GenerateItems(cur_date.AddDays(-100), cur_date.AddDays(100), 100);
+
+
+                var _strategy = NotificationStrategyGenericBuilder.Create()
+                    .WithAvoidedDaysOfWeeks(DayOfWeek.Saturday, DayOfWeek.Sunday)
+                    .WithNotificationWindows(NotificationStrategyWindow.Create(TimeSpan.FromHours(10), TimeSpan.FromHours(20)))
+                    .WithNotificationReminders(TimeSpan.FromHours(1), TimeSpan.FromHours(2))
+                    .WithExpirationSpanAfterInitialDate(TimeSpan.FromHours(2))
+                    .WithExpirationSpanBeforeEndingDate(TimeSpan.FromHours(2))
+                    .Build();
+
+                var _provider = SimpleTestNotificationProviderBuilder.Create()
+                    .WithSystemDateProvider(_date)
+                    .WithSimpleTestNotificables(_items)
+                    .Build();
+
+                var pac = SmartTriggerBuilder.Create()
+                    .WithNotificationStrategy(_strategy)
+                    .WithSystemDateProvider(_date)
+                    .WithNotificationsProvider(_provider)
+                    .Build();
+
+
+
+                var all = await pac.EvaluateNotificables().GetAsyncEnumerator().ReadAll();
+
+                //var all =await res.ReadAll();
+
+
+                Assert.IsTrue(all.Count() < _items.Count());
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToString();
+            }
 
         }
     }
 }
 
-public class WeekDays_10_to_20_Every_Hour_NotificationStrategy : INotificationStrategy
-{
-
-    private Bsae
-    
-}
 
 
 
 public class SimpleTestNotificable : INotificable
 {
+    public static SimpleTestNotificable Create(DateTime start)
+    {
+        return Create(System.Guid.NewGuid().ToString(), start, DateTime.MaxValue);
+    }
+
     public static SimpleTestNotificable Create(string uniqueId, DateTime start, DateTime end)
     {
         return new SimpleTestNotificable()
@@ -148,15 +219,55 @@ public class SimpleTestNotificable : INotificable
     public DateTime End { get; set; }
 
 }
+public class SimpleTestNotificationProviderBuilder
+{
+    private IEnumerable<SimpleTestNotificable> _data;
+    private ISystemDateProvider _systemDateProvider;
+    private SimpleTestNotificationProviderBuilder()
+    {
+
+    }
+
+    public SimpleTestNotificationProviderBuilder WithSystemDateProvider<T>() where T : ISystemDateProvider
+    {
+        return WithSystemDateProvider(Activator.CreateInstance<T>());
+    }
+    public SimpleTestNotificationProviderBuilder WithSystemDateProvider(ISystemDateProvider systemDateProvider)
+    {
+        _systemDateProvider = systemDateProvider;
+        return this;
+    }
+
+    public SimpleTestNotificationProviderBuilder WithSimpleTestNotificables(params SimpleTestNotificable[] data)
+    {
+        return WithSimpleTestNotificables(data.AsEnumerable());
+    }
+
+    public SimpleTestNotificationProviderBuilder WithSimpleTestNotificables(IEnumerable<SimpleTestNotificable> data)
+    {
+        _data = data;
+        return this;
+    }
+
+    public static SimpleTestNotificationProviderBuilder Create()
+    {
+        return new SimpleTestNotificationProviderBuilder();
+    }
+    public SimpleTestNotificationProvider Build()
+    {
+        return new SimpleTestNotificationProvider(_data, _systemDateProvider);
+    }
+}
 public class SimpleTestNotificationProvider : INotificationsProvider
 {
     private IEnumerable<SimpleTestNotificable> _data;
     private SortedDictionary<string, NotificationStatus> _hiist = new SortedDictionary<string, NotificationStatus>();
-    private ISystemDateProvider systemDateProvider;
+    private ISystemDateProvider _systemDateProvider;
     public SimpleTestNotificationProvider(IEnumerable<SimpleTestNotificable> data,
         ISystemDateProvider systemDateProvider)
     {
         _data = data;
+        _systemDateProvider = systemDateProvider;
     }
 
     public void SetProvide(IEnumerable<SimpleTestNotificable> data)
@@ -177,14 +288,14 @@ public class SimpleTestNotificationProvider : INotificationsProvider
             _hiist.Add(UniqueId, new NotificationStatus()
             {
                 AcumulatedNotifications = 1,
-                LastNotificationDate = systemDateProvider.Now
+                LastNotificationDate = _systemDateProvider.Now
             });
 
         }
         else
         {
             current.AcumulatedNotifications++;
-            current.LastNotificationDate = systemDateProvider.Now;
+            current.LastNotificationDate = _systemDateProvider.Now;
         }
 
         //throw new NotImplementedException();

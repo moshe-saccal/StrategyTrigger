@@ -23,25 +23,25 @@ namespace SmartTrigger
     }
     public class NotificationStrategyWindow
     {
-        public static NotificationStrategyWindow Create( TimeSpan start =default(TimeSpan),
+        public static NotificationStrategyWindow Create(TimeSpan start = default(TimeSpan),
             TimeSpan end = default(TimeSpan))
         {
             return new NotificationStrategyWindow(start, end);
         }
         private NotificationStrategyWindow(TimeSpan start, TimeSpan end)
         {
-            if (end > start) throw new ArgumentException("end","End must be grather than start");
+            if (end < start) throw new ArgumentException("end", "End must be grather than start");
             Start = start;
             End = end;
         }
         public TimeSpan Start { get; private set; }
-        public TimeSpan End { get; private  set; }
+        public TimeSpan End { get; private set; }
     }
     public class NotificationStrategyReminder
     {
         public static NotificationStrategyReminder Create(TimeSpan interval)
         {
-            if (interval.TotalSeconds <= 10) throw new ArgumentNullException("interval","Interval Min 10 seconds");
+            if (interval.TotalSeconds <= 10) throw new ArgumentNullException("interval", "Interval Min 10 seconds");
             return new NotificationStrategyReminder(interval);
         }
         private NotificationStrategyReminder(TimeSpan interval)
@@ -52,13 +52,13 @@ namespace SmartTrigger
         //public int IntervalMultiplcator { get; set; }
     }
     public class NotificationStrategyGenericBuilder
-    { 
+    {
         private IEnumerable<DayOfWeek> _avoidedDayOfWeks;
         private IEnumerable<NotificationStrategyWindow> _notificationStrategyWindows;
         private IEnumerable<NotificationStrategyReminder> _notificationStrategyReminders;
         private TimeSpan _expirationSpanAfterInitialDate;
         private TimeSpan _expirationSpanBeforeEndingDate;
-        public NotificationStrategyGenericBuilder WithAvoidedDaysOfWeeks(params DayOfWeek [] avoidedDayOfWeks)
+        public NotificationStrategyGenericBuilder WithAvoidedDaysOfWeeks(params DayOfWeek[] avoidedDayOfWeks)
         {
             return WithAvoidedDaysOfWeeks(avoidedDayOfWeks.AsEnumerable());
         }
@@ -81,9 +81,9 @@ namespace SmartTrigger
         public NotificationStrategyGenericBuilder WithNotificationReminders(
             params TimeSpan[] notificationStrategyReminders)
         {
-            return WithNotificationReminders(notificationStrategyReminders.Select(a=> NotificationStrategyReminder.Create(a)));
+            return WithNotificationReminders(notificationStrategyReminders.Select(a => NotificationStrategyReminder.Create(a)));
         }
-        
+
         public NotificationStrategyGenericBuilder WithNotificationReminders(
             params NotificationStrategyReminder[] notificationStrategyReminders)
         {
@@ -92,7 +92,8 @@ namespace SmartTrigger
 
 
         public NotificationStrategyGenericBuilder WithNotificationReminders(
-            IEnumerable<NotificationStrategyReminder> notificationStrategyReminders )
+
+            IEnumerable<NotificationStrategyReminder> notificationStrategyReminders)
         {
             //_notificationStrategyWindows = notificationStrategyWindows;
             _notificationStrategyReminders = notificationStrategyReminders;
@@ -107,7 +108,7 @@ namespace SmartTrigger
         public NotificationStrategyGenericBuilder WithExpirationSpanBeforeEndingDate(
          TimeSpan expirationSpanBeforeEndingDate)
         {
-            _expirationSpanBeforeEndingDate = expirationSpanBeforeEndingDate ;
+            _expirationSpanBeforeEndingDate = expirationSpanBeforeEndingDate;
             return this;
         }
 
@@ -116,11 +117,14 @@ namespace SmartTrigger
 
         public NotificationStrategyGeneric Build()
         {
-            return NotificationStrategyGeneric.Create(avoidedDayOfWeks:_avoidedDayOfWeks, 
-                notificationStrategyWindows:_notificationStrategyWindows);
+            return NotificationStrategyGeneric.Create(avoidedDayOfWeks: _avoidedDayOfWeks,
+                notificationStrategyWindows: _notificationStrategyWindows,
+                  notificationStrategyReminders: _notificationStrategyReminders,
+                   expirationSpanAfterInitialDate: _expirationSpanAfterInitialDate,
+                   expirationSpanBeforeEndingDate: _expirationSpanBeforeEndingDate);
         }
 
-    } 
+    }
 
     public class NotificationStrategyGeneric : NotificationStrategyBase
     {
@@ -131,7 +135,13 @@ namespace SmartTrigger
                    TimeSpan expirationSpanAfterInitialDate = default(TimeSpan),
                    TimeSpan expirationSpanBeforeEndingDate = default(TimeSpan))
         {
-            return new NotificationStrategyGeneric(avoidedDayOfWeks: avoidedDayOfWeks);
+            return new NotificationStrategyGeneric(
+                avoidedDayOfWeks: avoidedDayOfWeks,
+                notificationStrategyWindows: notificationStrategyWindows,
+                notificationStrategyReminders: notificationStrategyReminders,
+                expirationSpanAfterInitialDate: expirationSpanAfterInitialDate,
+                expirationSpanBeforeEndingDate: expirationSpanBeforeEndingDate
+                );
         }
 
         private NotificationStrategyGeneric(IEnumerable<DayOfWeek> avoidedDayOfWeks = null,
@@ -142,7 +152,13 @@ namespace SmartTrigger
           )
         {
 
-            init(avoidedDayOfWeks);
+            init(
+                _avoidedDayOfWeks = avoidedDayOfWeks,
+                _notificationStrategyWindows = notificationStrategyWindows,
+                _notificationStrategyReminders = notificationStrategyReminders,
+                _expirationSpanAfterInitialDate = expirationSpanAfterInitialDate,
+                _expirationSpanBeforeEndingDate = expirationSpanBeforeEndingDate
+                );
         }
 
         private IEnumerable<DayOfWeek> _avoidedDayOfWeks;
@@ -236,13 +252,61 @@ namespace SmartTrigger
         public DateTime Now => DateTime.Now;
         public DateTime UtcNow => DateTime.UtcNow;
     }
-    public abstract class SmartTriggerBase
+
+    public class SmartTriggerBuilder
+    {
+
+        private INotificationsProvider _notificationsProvider;
+        private INotificationStrategy _notificationStrategy;
+        private ISystemDateProvider _systemDateProvider;
+        public SmartTriggerBuilder WithNotificationsProvider(INotificationsProvider notificationsProvider)
+        {
+            _notificationsProvider = notificationsProvider;
+            return this;
+        }
+        public SmartTriggerBuilder WithNotificationStrategy(INotificationStrategy notificationsStrategy)
+        {
+            _notificationStrategy = notificationsStrategy;
+            return this;
+        }
+        public SmartTriggerBuilder WithSystemDateProvider<T>() where T : ISystemDateProvider
+        {
+            return WithSystemDateProvider(Activator.CreateInstance<T>());
+        }
+
+
+        public SmartTriggerBuilder WithSystemDateProvider(ISystemDateProvider systemDateProvider)
+        {
+            _systemDateProvider = systemDateProvider;
+            return this;
+        }
+        public static SmartTriggerBuilder Create() => new SmartTriggerBuilder();
+
+        public SmartTriggerBase Build()
+        {
+            return SmartTriggerBase.Create(
+                notificationStrategy: _notificationStrategy,
+                notificationsProvider: _notificationsProvider,
+                systemDateProvider: _systemDateProvider);
+        }
+
+    }
+
+    public sealed class SmartTriggerBase
     {
         private readonly INotificationsProvider _notificationsProvider;
         private readonly INotificationStrategy _notificationStrategy;
         private readonly ISystemDateProvider _systemDateProvider;
 
-        public SmartTriggerBase(INotificationStrategy notificationStrategy,
+
+        public static SmartTriggerBase Create(INotificationStrategy notificationStrategy,
+        INotificationsProvider notificationsProvider,
+        ISystemDateProvider systemDateProvider)
+        {
+            return new SmartTriggerBase(notificationStrategy, notificationsProvider, systemDateProvider);
+        }
+
+        private SmartTriggerBase(INotificationStrategy notificationStrategy,
         INotificationsProvider notificationsProvider,
         ISystemDateProvider systemDateProvider)
         {
@@ -252,47 +316,62 @@ namespace SmartTrigger
 
         }
 
-        public async IAsyncEnumerable<Tuple<INotificable, NotifcableEvaluation>> GetNotificables()
+        public class NotificableEvaluationResult
+        {
+            public static NotificableEvaluationResult Create(INotificable notificable, NotifcableEvaluationResult result)
+            {
+                return new NotificableEvaluationResult(notificable, result);
+            }
+            private NotificableEvaluationResult(INotificable  notificable , NotifcableEvaluationResult result)
+            {
+                Notificable= notificable;
+                Result = result;
+
+            }
+            public INotificable Notificable { get; private set; }
+            public NotifcableEvaluationResult Result { get; private set; }
+        }
+        public async IAsyncEnumerable<NotificableEvaluationResult> EvaluateNotificables()
         {
             foreach (var a in _notificationsProvider.Provide())
             {
-                var reason = await shouldNotify(a);
+                var result= await shouldNotify(a);
 
-                yield return new Tuple<INotificable, NotifcableEvaluation>(a, reason);
+                yield return NotificableEvaluationResult.Create(a, result);
             }
         }
-        public enum NotifcableEvaluationReason
+        public enum NotifcableEvaluationResult
         {
-            NONE = 0,
-            OUTSIDE_DATE_LIMIT = 1,
-            VOIDED_DAY_OF_WEEK = 2,
-            OUTSIDE_TIME_WINDOW = 3,
-            NO_REMINDERS = 3
+            NOTIFY = 0,
+            DONT_NOTIFY_OUTSIDE_DATE_LIMIT = 1,
+            DONT_NOTIFY_VOIDED_DAY_OF_WEEK = 2,
+            DONT_NOTIFY_OUTSIDE_TIME_WINDOW = 3,
+            DONT_NOTIFY_OTHERS = 5
         }
-        public class NotifcableEvaluation
-        {
-            public static NotifcableEvaluation NotifyTrue() => new NotifcableEvaluation() { Notify = true };
-            public static NotifcableEvaluation NotifyFalse(NotifcableEvaluationReason reason)
-                => new NotifcableEvaluation() { Notify = false, Reason = reason };
-            public bool Notify { get; private set; }
-            public NotifcableEvaluationReason Reason { get; private set; }
-        }
-        private async Task<NotifcableEvaluation> shouldNotify(INotificable notificable)
+
+
+        /// <summary>
+        /// Evaluates notification 
+        /// Order of evaluation: 
+        ///  - Valid Day of Week ( AvoidedDayOfWeks )
+        ///  - Time Window ( NotificationStrategyWindows )
+        ///  - Date Limit ( ExpirationSpanAfterInitialDate - ExpirationSpanBeforeEndingDate ) 
+        ///  - Reminders ( NotificationStrategyReminders )
+        /// </summary>
+        /// <param name="notificable"></param>
+        /// <returns> NotifcableEvaluationResult</returns>        
+        private async Task<NotifcableEvaluationResult> shouldNotify(INotificable notificable)
         {
             var current_date = _systemDateProvider.Now;
 
-            if (!_notificationStrategy.NotificationStrategyReminders.Any())
-                return NotifcableEvaluation.NotifyFalse(NotifcableEvaluationReason.NO_REMINDERS);
-
-
             // DAY OF WEEK
             if (_notificationStrategy.AvoidedDayOfWeks.Contains(current_date.DayOfWeek))
-                return NotifcableEvaluation.NotifyFalse(NotifcableEvaluationReason.VOIDED_DAY_OF_WEEK);
+                return NotifcableEvaluationResult.DONT_NOTIFY_VOIDED_DAY_OF_WEEK;
 
             // TIME WINDOW
 
             if (!_notificationStrategy.NotificationStrategyWindows.IsInsideWindow(current_date))
-                return NotifcableEvaluation.NotifyFalse(NotifcableEvaluationReason.OUTSIDE_TIME_WINDOW);
+                return NotifcableEvaluationResult.DONT_NOTIFY_OUTSIDE_TIME_WINDOW;
 
             // DATE LIMIT
 
@@ -300,10 +379,10 @@ namespace SmartTrigger
             var end_date_limit = notificable.End.Add(-1 * _notificationStrategy.ExpirationSpanBeforeEndingDate);
 
             if (!(current_date >= start_date_limit && current_date <= end_date_limit))
-                return NotifcableEvaluation.NotifyFalse(NotifcableEvaluationReason.OUTSIDE_DATE_LIMIT);
+                return NotifcableEvaluationResult.DONT_NOTIFY_OUTSIDE_DATE_LIMIT;
 
 
-
+            // REMINDERS
 
             var _last_notification = _notificationsProvider.GetNotificationStatus(notificable.UniqueId);
             var ix = _last_notification?.AcumulatedNotifications ?? 0;
@@ -315,10 +394,10 @@ namespace SmartTrigger
             if (!_last_notification_date.HasValue ||
                 _last_notification_date.Value.Add(current_reminder.Interval) > current_date)
             {
-                return NotifcableEvaluation.NotifyTrue();
+                return NotifcableEvaluationResult.NOTIFY;
             }
 
-            return NotifcableEvaluation.NotifyFalse(NotifcableEvaluationReason.NONE);
+            return NotifcableEvaluationResult.DONT_NOTIFY_OTHERS;
 
 
         }
