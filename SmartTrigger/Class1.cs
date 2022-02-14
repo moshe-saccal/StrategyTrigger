@@ -33,7 +33,7 @@ namespace SmartTrigger
             if (end < start) throw new ArgumentException("end", "End must be grather than start");
             if ( (start-end ).TotalHours>24) throw new ArgumentException( "Window cannot we greather than 24hs");
 
-            Start = start;
+            Start = start; 
             End = end;
         }
         public TimeSpan Start { get; private set; }
