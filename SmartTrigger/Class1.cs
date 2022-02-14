@@ -31,6 +31,8 @@ namespace SmartTrigger
         private NotificationStrategyWindow(TimeSpan start, TimeSpan end)
         {
             if (end < start) throw new ArgumentException("end", "End must be grather than start");
+            if ( (start-end ).TotalHours>24) throw new ArgumentException( "Window cannot we greather than 24hs");
+
             Start = start;
             End = end;
         }
@@ -41,7 +43,8 @@ namespace SmartTrigger
     {
         public static NotificationStrategyReminder Create(TimeSpan interval)
         {
-            if (interval.TotalSeconds <= 10) throw new ArgumentNullException("interval", "Interval Min 10 seconds");
+            if (interval.TotalSeconds < 10) throw new ArgumentNullException("interval", "Interval Min 10 seconds");
+            if (interval.TotalDays > 365) throw new ArgumentNullException("interval", "Interval Max 365 days");
             return new NotificationStrategyReminder(interval);
         }
         private NotificationStrategyReminder(TimeSpan interval)

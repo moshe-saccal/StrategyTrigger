@@ -151,7 +151,7 @@ namespace SmartTrigger.Test
 
 
         [Test]
-        public async Task Test_Notificable_1stNotificationOk_2ndOmitted()
+        public async Task Test_Notificable_1stNotificationOk_2ndOmitted_3rd_ok()
         {
 
             var thu_11am = DateTime.Now.Next(DayOfWeek.Thursday).
@@ -175,23 +175,14 @@ namespace SmartTrigger.Test
                    ));
 
            
-            Assert.True(result.FirstOrDefault().Result.Equals(NotifcableEvaluationResult.NOTIFY));
-
-
-            ((SimpleTestNotificationProvider)provider).SetNotified("notif_user1234");
-             
-            _date.SetDate(thu_1259am);
-
-            var second_result = await smart_trigger.EvaluateNotificables().GetAsyncEnumerator().ReadAll();
-
-            Assert.IsTrue(second_result.FirstOrDefault().Result.Equals(NotifcableEvaluationResult.DONT_NOTIFY_OUTSIDE_INTERVAL));
-
-            _date.SetDate(thu_5pm);
-            
-            var third_result = await smart_trigger.EvaluateNotificables().GetAsyncEnumerator().ReadAll();
-
-            Assert.IsTrue(third_result.FirstOrDefault().Result.Equals(NotifcableEvaluationResult.NOTIFY));
-
+            Assert.True(result.FirstOrDefault().Result.Equals(NotifcableEvaluationResult.NOTIFY)); 
+            ((SimpleTestNotificationProvider)provider).SetNotified("notif_user1234"); 
+            _date.SetDate(thu_1259am); 
+            var second_result = await smart_trigger.EvaluateNotificables().GetAsyncEnumerator().ReadAll(); 
+            Assert.IsTrue(second_result.FirstOrDefault().Result.Equals(NotifcableEvaluationResult.DONT_NOTIFY_OUTSIDE_INTERVAL)); 
+            _date.SetDate(thu_5pm); 
+            var third_result = await smart_trigger.EvaluateNotificables().GetAsyncEnumerator().ReadAll(); 
+            Assert.IsTrue(third_result.FirstOrDefault().Result.Equals(NotifcableEvaluationResult.NOTIFY)); 
         }
 
 
