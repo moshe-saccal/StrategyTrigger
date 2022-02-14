@@ -11,7 +11,6 @@ C:\Users\Administrator\source\repos\moshe-saccal\SmartTrigger\obj\Debug\netcorea
 C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\bin\Debug\netcoreapp3.1\SmartTrigger.deps.json
 C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\bin\Debug\netcoreapp3.1\SmartTrigger.dll
 C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\bin\Debug\netcoreapp3.1\SmartTrigger.pdb
-C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\obj\Debug\netcoreapp3.1\SmartTrigger.csproj.AssemblyReference.cache
 C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\obj\Debug\netcoreapp3.1\SmartTrigger.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\obj\Debug\netcoreapp3.1\SmartTrigger.AssemblyInfoInputs.cache
 C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\obj\Debug\netcoreapp3.1\SmartTrigger.AssemblyInfo.cs

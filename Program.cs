@@ -1,4 +1,7 @@
 ﻿using SmartTrigger;
+using SmartTrigger.Interfaces;
+using SmartTrigger.Models;
+
 var l = TimeSpan.FromDays(2000);
 var years = l.TotalDays / 360;
 
@@ -9,43 +12,7 @@ Console.ReadLine();
 
 
 l.ToString();
-
-public class PackageSchedulerNotificationStrategy : INotificationStrategy
-{
-    public bool RetryIfDayIsVoided => true;
-
-    public IEnumerable<DayOfWeek> AvoidedDayOfWeks => new DayOfWeek[] { DayOfWeek.Sunday, DayOfWeek.Saturday };
-
-    public IEnumerable<NotificationStrategyWindow> NotificationStrategyWindows
-        => new NotificationStrategyWindow[] { new NotificationStrategyWindow ()
-        {
-              Start = TimeSpan.FromHours(10),
-               End = TimeSpan.FromHours(20)
-        } };
-
-
-    public IEnumerable<NotificationStrategyReminder> NotificationStrategyReminders
-        => new NotificationStrategyReminder[]
-        {
-            new NotificationStrategyReminder(){  Interval= TimeSpan.FromDays(200)},
-            new NotificationStrategyReminder(){  Interval= TimeSpan.FromMinutes(10)},
-            new NotificationStrategyReminder(){  Interval= TimeSpan.FromMinutes(20)},
-        };
-    public TimeSpan ExpirationSpanAfterInitialDate => TimeSpan.FromMinutes(100);
-
-    public TimeSpan ExpirationSpanBeforeEndingDate => TimeSpan.FromMinutes(200);
-}
-public class PackageSchedulerNotificator : SmartTriggerBase
-{
-    public PackageSchedulerNotificator() : base(new PackageSchedulerNotificationStrategy(),
-        new PackageSchedulerHistoricalNotificationProvider(20),
-        new CurrentDateProvider())
-    {
-
-    }
-
-    public IEnumerable<Guid> AccountsToBeNotified { get; set; }
-}
+ 
 
 
 
