@@ -58,6 +58,7 @@ namespace SmartTrigger
         private IEnumerable<NotificationStrategyReminder> _notificationStrategyReminders;
         private TimeSpan _expirationSpanAfterInitialDate;
         private TimeSpan _expirationSpanBeforeEndingDate;
+        private TimeSpan _minSpanBetweenNotifications;
         public NotificationStrategyGenericBuilder WithAvoidedDaysOfWeeks(params DayOfWeek[] avoidedDayOfWeks)
         {
             return WithAvoidedDaysOfWeeks(avoidedDayOfWeks.AsEnumerable());
@@ -111,6 +112,12 @@ namespace SmartTrigger
             _expirationSpanBeforeEndingDate = expirationSpanBeforeEndingDate;
             return this;
         }
+        public NotificationStrategyGenericBuilder WithMinSpanBetweenNotifications(
+     TimeSpan minSpanBetweenNotifications)
+        {
+            _minSpanBetweenNotifications = minSpanBetweenNotifications;
+            return this;
+        }
 
 
         //IEnumerable<NotificationStrategyReminder> notificationStrategyReminders
@@ -121,7 +128,8 @@ namespace SmartTrigger
                 notificationStrategyWindows: _notificationStrategyWindows,
                   notificationStrategyReminders: _notificationStrategyReminders,
                    expirationSpanAfterInitialDate: _expirationSpanAfterInitialDate,
-                   expirationSpanBeforeEndingDate: _expirationSpanBeforeEndingDate);
+                   expirationSpanBeforeEndingDate: _expirationSpanBeforeEndingDate,
+                   minSpanBetweenNotifications: _minSpanBetweenNotifications);
         }
 
     }
@@ -133,14 +141,16 @@ namespace SmartTrigger
                    IEnumerable<NotificationStrategyWindow> notificationStrategyWindows = null,
                    IEnumerable<NotificationStrategyReminder> notificationStrategyReminders = null,
                    TimeSpan expirationSpanAfterInitialDate = default(TimeSpan),
-                   TimeSpan expirationSpanBeforeEndingDate = default(TimeSpan))
+                   TimeSpan expirationSpanBeforeEndingDate = default(TimeSpan),
+                   TimeSpan minSpanBetweenNotifications = default(TimeSpan))
         {
             return new NotificationStrategyGeneric(
                 avoidedDayOfWeks: avoidedDayOfWeks,
                 notificationStrategyWindows: notificationStrategyWindows,
                 notificationStrategyReminders: notificationStrategyReminders,
                 expirationSpanAfterInitialDate: expirationSpanAfterInitialDate,
-                expirationSpanBeforeEndingDate: expirationSpanBeforeEndingDate
+                expirationSpanBeforeEndingDate: expirationSpanBeforeEndingDate,
+                minSpanBetweenNotifications: minSpanBetweenNotifications
                 );
         }
 
@@ -148,7 +158,8 @@ namespace SmartTrigger
           IEnumerable<NotificationStrategyWindow> notificationStrategyWindows = null,
           IEnumerable<NotificationStrategyReminder> notificationStrategyReminders = null,
           TimeSpan expirationSpanAfterInitialDate = default(TimeSpan),
-          TimeSpan expirationSpanBeforeEndingDate = default(TimeSpan)
+          TimeSpan expirationSpanBeforeEndingDate = default(TimeSpan),
+          TimeSpan minSpanBetweenNotifications = default(TimeSpan)
           )
         {
 
@@ -157,7 +168,8 @@ namespace SmartTrigger
                 _notificationStrategyWindows = notificationStrategyWindows,
                 _notificationStrategyReminders = notificationStrategyReminders,
                 _expirationSpanAfterInitialDate = expirationSpanAfterInitialDate,
-                _expirationSpanBeforeEndingDate = expirationSpanBeforeEndingDate
+                _expirationSpanBeforeEndingDate = expirationSpanBeforeEndingDate,
+                _minSpanBetweenNotifications = minSpanBetweenNotifications
                 );
         }
 
@@ -166,6 +178,8 @@ namespace SmartTrigger
         private IEnumerable<NotificationStrategyReminder> _notificationStrategyReminders;
         private TimeSpan _expirationSpanAfterInitialDate;
         private TimeSpan _expirationSpanBeforeEndingDate;
+        private TimeSpan _minSpanBetweenNotifications;
+
 
         public override IEnumerable<DayOfWeek> AvoidedDayOfWeks
             => _avoidedDayOfWeks;
@@ -181,12 +195,14 @@ namespace SmartTrigger
         public override TimeSpan ExpirationSpanBeforeEndingDate
             => _expirationSpanBeforeEndingDate;
 
-
+        public override TimeSpan MinSpanBetweenNotifications
+            => _minSpanBetweenNotifications;
         private void init(IEnumerable<DayOfWeek> avoidedDayOfWeks = null,
             IEnumerable<NotificationStrategyWindow> notificationStrategyWindows = null,
           IEnumerable<NotificationStrategyReminder> notificationStrategyReminders = null,
           TimeSpan expirationSpanAfterInitialDate = default(TimeSpan),
-          TimeSpan expirationSpanBeforeEndingDate = default(TimeSpan))
+          TimeSpan expirationSpanBeforeEndingDate = default(TimeSpan),
+          TimeSpan minSpanBetweenNotifications = default(TimeSpan))
         {
             _avoidedDayOfWeks = avoidedDayOfWeks;
             _notificationStrategyWindows = notificationStrategyWindows;
@@ -208,6 +224,9 @@ namespace SmartTrigger
         public abstract TimeSpan ExpirationSpanAfterInitialDate { get; }
 
         public abstract TimeSpan ExpirationSpanBeforeEndingDate { get; }
+        public abstract TimeSpan MinSpanBetweenNotifications { get; }
+
+
 
     }
     public interface INotificationStrategy
@@ -236,7 +255,7 @@ namespace SmartTrigger
     }
     public interface INotificable
     {
-        public string UniqueId { get; }
+        public string NotificationIdentifier { get; }
         public DateTime Start { get; }
         public DateTime End { get; }
     }
@@ -322,9 +341,9 @@ namespace SmartTrigger
             {
                 return new NotificableEvaluationResult(notificable, result);
             }
-            private NotificableEvaluationResult(INotificable  notificable , NotifcableEvaluationResult result)
+            private NotificableEvaluationResult(INotificable notificable, NotifcableEvaluationResult result)
             {
-                Notificable= notificable;
+                Notificable = notificable;
                 Result = result;
 
             }
@@ -335,7 +354,7 @@ namespace SmartTrigger
         {
             foreach (var a in _notificationsProvider.Provide())
             {
-                var result= await shouldNotify(a);
+                var result = await shouldNotify(a);
 
                 yield return NotificableEvaluationResult.Create(a, result);
             }
@@ -346,7 +365,9 @@ namespace SmartTrigger
             DONT_NOTIFY_OUTSIDE_DATE_LIMIT = 1,
             DONT_NOTIFY_VOIDED_DAY_OF_WEEK = 2,
             DONT_NOTIFY_OUTSIDE_TIME_WINDOW = 3,
-            DONT_NOTIFY_OTHERS = 5
+            DONT_NOTIFY_OTHERS = 5,
+            DONT_NOTIFY_OUTSIDE_INTERVAL = 6,
+
         }
 
 
@@ -378,27 +399,36 @@ namespace SmartTrigger
             var start_date_limit = notificable.Start.Add(_notificationStrategy.ExpirationSpanAfterInitialDate);
             var end_date_limit = notificable.End.Add(-1 * _notificationStrategy.ExpirationSpanBeforeEndingDate);
 
-            if (!(current_date >= start_date_limit && current_date <= end_date_limit))
+            if (!(current_date >= start_date_limit && current_date < end_date_limit))
                 return NotifcableEvaluationResult.DONT_NOTIFY_OUTSIDE_DATE_LIMIT;
 
 
             // REMINDERS
 
-            var _last_notification = _notificationsProvider.GetNotificationStatus(notificable.UniqueId);
+            var _last_notification = _notificationsProvider.GetNotificationStatus(notificable.NotificationIdentifier);
             var ix = _last_notification?.AcumulatedNotifications ?? 0;
-            var current_reminder = _notificationStrategy.NotificationStrategyReminders.OrderBy(a => a.Interval).
-                                    Skip(ix).Take(1).FirstOrDefault();
+            var current_reminder_seconds = _notificationStrategy.NotificationStrategyReminders.OrderBy(a => a.Interval).
+                                    Skip(ix).Take(1).FirstOrDefault()?.Interval.TotalSeconds ?? 0;
+
+
+            var past_reminders_acumulated_seconds = _notificationStrategy.NotificationStrategyReminders.OrderBy(a => a.Interval).
+                                    Take(ix).Sum(x => x.Interval.TotalSeconds);
+
+
 
             var _last_notification_date = _last_notification?.LastNotificationDate;
 
             if (!_last_notification_date.HasValue ||
-                _last_notification_date.Value.Add(current_reminder.Interval) > current_date)
+                _last_notification_date.Value
+                    .AddSeconds(past_reminders_acumulated_seconds)
+                    .AddSeconds(current_reminder_seconds) <= current_date)
             {
                 return NotifcableEvaluationResult.NOTIFY;
             }
-
-            return NotifcableEvaluationResult.DONT_NOTIFY_OTHERS;
-
+            else
+            {
+                return NotifcableEvaluationResult.DONT_NOTIFY_OUTSIDE_INTERVAL;
+            }
 
         }
     }

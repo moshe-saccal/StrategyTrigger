@@ -4,12 +4,7 @@ var years = l.TotalDays / 360;
 
 
 var pac = new PackageSchedulerNotificator();
-var res =pac.GetNotificables().GetAsyncEnumerator();
-
-while(await res.MoveNextAsync())
-{
-    Console.WriteLine(res.Current.Item1.UniqueId);
-}
+ 
 Console.ReadLine();
 
 
@@ -56,7 +51,7 @@ public class PackageSchedulerNotificator : SmartTriggerBase
 
 public class PackageSchedulerTask : INotificable
 {
-    public string UniqueId { get; set; }
+    public string NotificationIdentifier { get; set; }
     public DateTime Start { get; set; }
     public DateTime End { get; }
 
@@ -81,7 +76,7 @@ public class PackageSchedulerHistoricalNotificationProvider : INotificationsProv
     {
         return Enumerable.Range(0, _Q).Select(a => new PackageSchedulerTask()
         {
-            UniqueId = System.Guid.NewGuid().ToString(),
+            NotificationIdentifier = System.Guid.NewGuid().ToString(),
             Start = DateTime.Now
         }); ;
         
