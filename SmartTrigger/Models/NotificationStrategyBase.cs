@@ -13,9 +13,9 @@ namespace SmartTrigger.Models
         public abstract IEnumerable<NotificationStrategyWindow> NotificationStrategyWindows { get; }
         public abstract IEnumerable<NotificationStrategyReminder> NotificationStrategyReminders { get; }
 
-        public abstract TimeSpan ExpirationSpanAfterInitialDate { get; }
+        public abstract TimeSpan SpanAfterInitialDate { get; }
 
-        public abstract TimeSpan ExpirationSpanBeforeEndingDate { get; }
+        public abstract TimeSpan SpanBeforeEndingDate { get; }
         public abstract TimeSpan MinSpanBetweenNotifications { get; }
 
 

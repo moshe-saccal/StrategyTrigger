@@ -60,10 +60,10 @@ namespace SmartTrigger.NotificationStrategyGeneric
         public override IEnumerable<NotificationStrategyReminder> NotificationStrategyReminders
             => _notificationStrategyReminders;
 
-        public override TimeSpan ExpirationSpanAfterInitialDate
+        public override TimeSpan SpanAfterInitialDate
                => _expirationSpanAfterInitialDate;
 
-        public override TimeSpan ExpirationSpanBeforeEndingDate
+        public override TimeSpan SpanBeforeEndingDate
             => _expirationSpanBeforeEndingDate;
 
         public override TimeSpan MinSpanBetweenNotifications

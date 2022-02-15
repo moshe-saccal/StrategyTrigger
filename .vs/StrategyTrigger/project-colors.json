@@ -5,7 +5,32 @@
       "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
       "DisplayName": "Miscellaneous Files",
       "ColorIndex": -1
+    },
+    "65eede51-9119-43d6-b5b1-4a2ca0cc4b07": {
+      "ProjectGuid": "65eede51-9119-43d6-b5b1-4a2ca0cc4b07",
+      "DisplayName": "StrategyTrigger",
+      "ColorIndex": 0
+    },
+    "8ea21b6c-84c9-4e41-a035-16464acab416": {
+      "ProjectGuid": "8ea21b6c-84c9-4e41-a035-16464acab416",
+      "DisplayName": "SmartTrigger",
+      "ColorIndex": 1
+    },
+    "8f3035fd-a37e-4dd9-a13a-9ed886e13edd": {
+      "ProjectGuid": "8f3035fd-a37e-4dd9-a13a-9ed886e13edd",
+      "DisplayName": "SmartTrigger.Test",
+      "ColorIndex": 2
+    },
+    "677101dc-1519-432d-833a-007bd58f9236": {
+      "ProjectGuid": "677101dc-1519-432d-833a-007bd58f9236",
+      "DisplayName": "SmartTrigger",
+      "ColorIndex": 3
+    },
+    "62ef9672-ecfa-4527-9541-1a48f382b2a7": {
+      "ProjectGuid": "62ef9672-ecfa-4527-9541-1a48f382b2a7",
+      "DisplayName": "SmartTrigger.Test",
+      "ColorIndex": 4
     }
   },
-  "NextColorIndex": 0
+  "NextColorIndex": 5
 }

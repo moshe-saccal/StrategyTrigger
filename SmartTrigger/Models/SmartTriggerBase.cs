@@ -72,8 +72,8 @@ namespace SmartTrigger.Models
 
             // DATE LIMIT
 
-            var start_date_limit = notificable.Start.Add(_notificationStrategy.ExpirationSpanAfterInitialDate);
-            var end_date_limit = notificable.End.Add(-1 * _notificationStrategy.ExpirationSpanBeforeEndingDate);
+            var start_date_limit = notificable.Start.Add(_notificationStrategy.SpanAfterInitialDate);
+            var end_date_limit = notificable.End.Add(-1 * _notificationStrategy.SpanBeforeEndingDate);
 
             if (!(current_date >= start_date_limit && current_date < end_date_limit))
                 return NotifcableEvaluationResult.DONT_NOTIFY_OUTSIDE_DATE_LIMIT;

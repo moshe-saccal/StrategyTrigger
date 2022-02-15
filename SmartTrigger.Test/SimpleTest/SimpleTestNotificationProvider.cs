@@ -30,6 +30,8 @@ namespace SmartTrigger.Test
         public IEnumerable<INotificable> Provide()
             => _data;
 
+        public void SetNotified(string[] UniqueIds)
+            => UniqueIds.ToList().ForEach(a => SetNotified(a));
         public void SetNotified(string UniqueId)
         {
             NotificationStatus current;

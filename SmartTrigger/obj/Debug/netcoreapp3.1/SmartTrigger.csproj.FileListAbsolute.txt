@@ -17,3 +17,4 @@ C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\ob
 C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\obj\Debug\netcoreapp3.1\SmartTrigger.csproj.CoreCompileInputs.cache
 C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\obj\Debug\netcoreapp3.1\SmartTrigger.dll
 C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\obj\Debug\netcoreapp3.1\SmartTrigger.pdb
+C:\Users\Administrator\source\repos\moshe-saccal\StrategyTrigger\SmartTrigger\obj\Debug\netcoreapp3.1\SmartTrigger.csproj.AssemblyReference.cache
